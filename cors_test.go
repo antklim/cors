@@ -92,23 +92,22 @@ func TestRoutes(t *testing.T) {
 				assert.Equal(t, "DELETE", h.Get("Access-Control-Allow-Methods"))
 			},
 		},
-		// TODO: implement after rules parser finished
-		// {
-		// 	desc:   "request to registered path B returns 200 for *;*;;* rule",
-		// 	method: http.MethodOptions,
-		// 	headers: map[string]string{
-		// 		"Origin":                        "https://foo.bar.org",
-		// 		"Access-Control-Request-Method": "PUT",
-		// 	},
-		// 	path:  "/b",
-		// 	rules: "*;*;;*",
-		// 	code:  http.StatusOK,
-		// 	assertHeaders: func(t *testing.T, h http.Header) {
-		// 		assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
-		// 		assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
-		// 		assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
-		// 	},
-		// },
+		{
+			desc:   "request to registered path B returns 200 for *;*;;* rule",
+			method: http.MethodOptions,
+			headers: map[string]string{
+				"Origin":                        "https://foo.bar.org",
+				"Access-Control-Request-Method": "PUT",
+			},
+			path:  "/b",
+			rules: "*;*;;*",
+			code:  http.StatusOK,
+			assertHeaders: func(t *testing.T, h http.Header) {
+				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
+				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
+				assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
