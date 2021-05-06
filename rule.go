@@ -10,7 +10,9 @@ import (
 const (
 	rulesDlm  string = "\n"
 	fieldsDlm string = ";"
-	fields    int    = 4
+	valuesDlm string = ","
+
+	fields int = 4
 
 	wildcard string = "*"
 )
@@ -63,13 +65,15 @@ func (r *rules) Parse() error {
 			return fmt.Errorf("invalid cors rules: invalid amount of fields in rule %d, got %d want %d", i+1, s, fields)
 		}
 
-		p := []string{pohm[pIdx]} // paths
-		o := []string{pohm[oIdx]} // origins
-		h := []string{pohm[hIdx]} // headers
-		m := []string{pohm[mIdx]} // methods
+		p := strings.Split(pohm[pIdx], valuesDlm) // paths
+		o := strings.Split(pohm[oIdx], valuesDlm) // origins
+		h := strings.Split(pohm[hIdx], valuesDlm) // headers
 
+		var m []string // methods
 		if pohm[mIdx] == wildcard {
 			m = allMethods
+		} else {
+			m = strings.Split(pohm[mIdx], valuesDlm)
 		}
 
 		r.r[i] = rule{
