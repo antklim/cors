@@ -47,16 +47,16 @@ func TestRuleParse(t *testing.T) {
 			config: "*;*;;*",
 			r: &rules{
 				raw: "*;*;;*",
-				r: []rule{{
-					raw: "*;*;;*",
-					p:   []string{"*"},
-					o:   []string{"*"},
-					h:   []string{""},
-					m: []string{
-						http.MethodDelete, http.MethodGet, http.MethodHead,
-						http.MethodPatch, http.MethodPost, http.MethodPut,
+				pr: map[string]rule{
+					"*": {
+						o: []string{"*"},
+						h: []string{""},
+						m: []string{
+							http.MethodDelete, http.MethodGet, http.MethodHead,
+							http.MethodPatch, http.MethodPost, http.MethodPut,
+						},
 					},
-				}},
+				},
 			},
 		},
 		{
@@ -64,13 +64,18 @@ func TestRuleParse(t *testing.T) {
 			config: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
 			r: &rules{
 				raw: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
-				r: []rule{{
-					raw: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
-					p:   []string{"/a", "/b"},
-					o:   []string{"foo.com", "bar.com"},
-					h:   []string{"content-type", "content-length"},
-					m:   []string{http.MethodDelete, http.MethodPut},
-				}},
+				pr: map[string]rule{
+					"/a": {
+						o: []string{"foo.com", "bar.com"},
+						h: []string{"content-type", "content-length"},
+						m: []string{http.MethodDelete, http.MethodPut},
+					},
+					"/b": {
+						o: []string{"foo.com", "bar.com"},
+						h: []string{"content-type", "content-length"},
+						m: []string{http.MethodDelete, http.MethodPut},
+					},
+				},
 			},
 		},
 	}

@@ -35,16 +35,14 @@ var allMethods = []string{
 }
 
 type rule struct {
-	raw string
-	p   []string // paths
-	o   []string // origins
-	h   []string // headers
-	m   []string // methods
+	o []string // origins
+	h []string // headers
+	m []string // methods
 }
 
 type rules struct {
 	raw string
-	r   []rule
+	pr  map[string]rule
 }
 
 func newRules(config string) *rules {
@@ -57,7 +55,8 @@ func (r *rules) Parse() error {
 	}
 
 	rawRules := strings.Split(r.raw, rulesDlm)
-	r.r = make([]rule, len(rawRules))
+	r.pr = make(map[string]rule)
+
 	for i, rr := range rawRules {
 		pohm := strings.Split(rr, fieldsDlm)
 
@@ -76,12 +75,14 @@ func (r *rules) Parse() error {
 			m = strings.Split(pohm[mIdx], valuesDlm)
 		}
 
-		r.r[i] = rule{
-			raw: rr,
-			p:   p,
-			o:   o,
-			h:   h,
-			m:   m,
+		// TODO: check whether path already registered
+		// TODO: break when met wildcard path
+		for _, v := range p {
+			r.pr[v] = rule{
+				o: o,
+				h: h,
+				m: m,
+			}
 		}
 	}
 
