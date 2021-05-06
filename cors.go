@@ -9,17 +9,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type rule struct {
-	raw string
-	p   []string // paths
-	o   []string // origins
-	h   []string // headers
-	m   []string // methods
-}
+// type rule struct {
+// 	raw string
+// 	p   []string // paths
+// 	o   []string // origins
+// 	h   []string // headers
+// 	m   []string // methods
+// }
 
 type rules struct {
 	raw string
-	r   []rule
+	// r   []rule
 }
 
 func newRules(config string) rules {
