@@ -60,6 +60,7 @@ func (r *rules) Parse() error {
 	for i, rr := range rawRules {
 		rr = strings.TrimSpace(rr)
 
+		// skip empty rows in confing
 		if len(rr) == 0 {
 			continue
 		}
@@ -72,6 +73,7 @@ func (r *rules) Parse() error {
 
 		p := strings.Split(pohm[pIdx], valuesDlm) // paths
 
+		// TODO: move paths, origin, headers and methods getters to separate methods
 		// origins
 		var o []string
 		if pohm[oIdx] != "" {
