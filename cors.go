@@ -33,6 +33,7 @@ func Routes(paths []string, config string) (http.Handler, error) {
 		found, _ := find(paths, p)
 		if found {
 			addRule(router, p, rule)
+			// TODO: delete rule here to avoid duplication when reached a wildcard
 		}
 	}
 

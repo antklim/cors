@@ -1,7 +1,6 @@
 package cors
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,8 +11,6 @@ const (
 	fieldsDlm string = ";"
 	valuesDlm string = ","
 
-	fields int = 4
-
 	wildcard string = "*"
 )
 
@@ -22,7 +19,10 @@ const (
 	oIdx
 	hIdx
 	mIdx
+	fNum // a number of fields in the rule, must be last
 )
+
+const parseErr string = "invalid cors rules"
 
 // Methods excluding CONNECT, OPTIONS, TRACE
 var allMethods = []string{
@@ -51,17 +51,23 @@ func newRules(config string) *rules {
 
 func (r *rules) Parse() error {
 	if strings.TrimSpace(r.raw) == "" {
-		return errors.New("invalid cors rules: cannot be empty")
+		return fmt.Errorf("%s: cannot be empty", parseErr)
 	}
 
 	rawRules := strings.Split(r.raw, rulesDlm)
 	r.pr = make(map[string]rule)
 
 	for i, rr := range rawRules {
+		rr = strings.TrimSpace(rr)
+
+		if len(rr) == 0 {
+			continue
+		}
+
 		pohm := strings.Split(rr, fieldsDlm)
 
-		if s := len(pohm); s != fields {
-			return fmt.Errorf("invalid cors rules: invalid amount of fields in rule %d, got %d want %d", i+1, s, fields)
+		if s := len(pohm); s != fNum {
+			return fmt.Errorf("%s: invalid amount of fields in rule %d, got %d want %d", parseErr, i+1, s, fNum)
 		}
 
 		p := strings.Split(pohm[pIdx], valuesDlm) // paths
@@ -76,12 +82,16 @@ func (r *rules) Parse() error {
 		}
 
 		// TODO: check whether path already registered
-		// TODO: break when met wildcard path
 		for _, v := range p {
 			r.pr[v] = rule{
 				o: o,
 				h: h,
 				m: m,
+			}
+
+			if v == wildcard {
+				// stop parsing when found path wildcard
+				return nil
 			}
 		}
 	}

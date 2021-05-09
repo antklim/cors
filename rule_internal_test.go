@@ -78,6 +78,78 @@ func TestRuleParse(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc: "parses multiline config",
+			config: `/a;foo.com;content-type;DELETE
+			/b;bar.com;content-length;PUT`,
+			r: &rules{
+				raw: `/a;foo.com;content-type;DELETE
+			/b;bar.com;content-length;PUT`,
+				pr: map[string]rule{
+					"/a": {
+						o: []string{"foo.com"},
+						h: []string{"content-type"},
+						m: []string{http.MethodDelete},
+					},
+					"/b": {
+						o: []string{"bar.com"},
+						h: []string{"content-length"},
+						m: []string{http.MethodPut},
+					},
+				},
+			},
+		},
+		{
+			desc: "ignores leading and closing empty strings in multiline config",
+			config: `
+					/a;foo.com;content-type;DELETE
+					/b;bar.com;content-length;PUT
+					`,
+			r: &rules{
+				raw: `
+					/a;foo.com;content-type;DELETE
+					/b;bar.com;content-length;PUT
+					`,
+				pr: map[string]rule{
+					"/a": {
+						o: []string{"foo.com"},
+						h: []string{"content-type"},
+						m: []string{http.MethodDelete},
+					},
+					"/b": {
+						o: []string{"bar.com"},
+						h: []string{"content-length"},
+						m: []string{http.MethodPut},
+					},
+				},
+			},
+		},
+		// {
+		// 	desc: "check whether path already registered",
+		// }
+		{
+			desc: "stops parsing when found paths wildcard",
+			config: `/a;foo.com;content-type;DELETE
+			*;foobar.com;;PATCH
+			/b;bar.com;content-length;PUT`,
+			r: &rules{
+				raw: `/a;foo.com;content-type;DELETE
+			*;foobar.com;;PATCH
+			/b;bar.com;content-length;PUT`,
+				pr: map[string]rule{
+					"/a": {
+						o: []string{"foo.com"},
+						h: []string{"content-type"},
+						m: []string{http.MethodDelete},
+					},
+					"*": {
+						o: []string{"foobar.com"},
+						h: []string{""},
+						m: []string{http.MethodPatch},
+					},
+				},
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
