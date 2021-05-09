@@ -18,6 +18,7 @@ func TestRuleParseError(t *testing.T) {
 			desc: "fails when cors rules config is empty",
 			err:  "invalid cors rules: cannot be empty",
 		},
+		// TODO: fails when paths is empty
 		// {
 		// TODO: add fields amount validation
 		// 	desc: "fails when cors rules config has invalid amount fields in a rule",
@@ -50,11 +51,25 @@ func TestRuleParse(t *testing.T) {
 				pr: map[string]rule{
 					"*": {
 						o: []string{"*"},
-						h: []string{""},
+						h: nil,
 						m: []string{
 							http.MethodDelete, http.MethodGet, http.MethodHead,
 							http.MethodPatch, http.MethodPost, http.MethodPut,
 						},
+					},
+				},
+			},
+		},
+		{
+			desc:   "parses empty origin, headers and methods",
+			config: "*;;;",
+			r: &rules{
+				raw: "*;;;",
+				pr: map[string]rule{
+					"*": {
+						o: nil,
+						h: nil,
+						m: nil,
 					},
 				},
 			},
@@ -144,7 +159,7 @@ func TestRuleParse(t *testing.T) {
 					},
 					"*": {
 						o: []string{"foobar.com"},
-						h: []string{""},
+						h: nil,
 						m: []string{http.MethodPatch},
 					},
 				},

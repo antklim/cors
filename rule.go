@@ -71,13 +71,23 @@ func (r *rules) Parse() error {
 		}
 
 		p := strings.Split(pohm[pIdx], valuesDlm) // paths
-		o := strings.Split(pohm[oIdx], valuesDlm) // origins
-		h := strings.Split(pohm[hIdx], valuesDlm) // headers
+
+		// origins
+		var o []string
+		if pohm[oIdx] != "" {
+			o = strings.Split(pohm[oIdx], valuesDlm)
+		}
+
+		// headers
+		var h []string
+		if pohm[hIdx] != "" {
+			h = strings.Split(pohm[hIdx], valuesDlm)
+		}
 
 		var m []string // methods
 		if pohm[mIdx] == wildcard {
 			m = allMethods
-		} else {
+		} else if pohm[mIdx] != "" {
 			m = strings.Split(pohm[mIdx], valuesDlm)
 		}
 
