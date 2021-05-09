@@ -89,10 +89,15 @@ func (r *rules) Parse() error {
 			m = allMethods
 		} else if pohm[mIdx] != "" {
 			m = strings.Split(pohm[mIdx], valuesDlm)
+			m = toUpper(m)
 		}
 
 		// TODO: check whether path already registered
 		for _, v := range p {
+			if v == "" {
+				return fmt.Errorf("%s: path cannot be empty", parseErr)
+			}
+
 			r.pr[v] = rule{
 				o: o,
 				h: h,
@@ -107,4 +112,12 @@ func (r *rules) Parse() error {
 	}
 
 	return nil
+}
+
+func toUpper(slist []string) []string {
+	var a []string
+	for _, s := range slist {
+		a = append(a, strings.ToUpper(s))
+	}
+	return a
 }

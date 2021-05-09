@@ -18,14 +18,21 @@ func TestRuleParseError(t *testing.T) {
 			desc: "fails when cors rules config is empty",
 			err:  "invalid cors rules: cannot be empty",
 		},
-		// TODO: fails when paths is empty
+		{
+			desc:   "fails when path is empty",
+			config: ";;;",
+			err:    "invalid cors rules: path cannot be empty",
+		},
+		{
+			desc:   "fails when cors rules config has invalid amount fields in a rule",
+			config: "*;;",
+			err:    "invalid cors rules: invalid amount of fields in rule 1, got 3 want 4",
+		},
+		// TODO:
 		// {
-		// TODO: add fields amount validation
-		// 	desc: "fails when cors rules config has invalid amount fields in a rule",
-		// },
-		// {
-		// TODO: add method validation
-		// 	desc: "fails when cors rules config has invalid http method",
+		// 	desc:   "fails when cors rules config has invalid http method",
+		// 	config: "*;;;foo",
+		// 	err:    "invalid cors rules: invalid HTTP method FOO in rule 1",
 		// },
 	}
 	for _, tC := range testCases {
@@ -70,6 +77,20 @@ func TestRuleParse(t *testing.T) {
 						o: nil,
 						h: nil,
 						m: nil,
+					},
+				},
+			},
+		},
+		{
+			desc:   "parses any case methods",
+			config: "*;;;post,Put",
+			r: &rules{
+				raw: "*;;;post,Put",
+				pr: map[string]rule{
+					"*": {
+						o: nil,
+						h: nil,
+						m: []string{http.MethodPost, http.MethodPut},
 					},
 				},
 			},
