@@ -1,11 +1,14 @@
 package cors_test
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/antklim/cors"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -164,16 +167,119 @@ func TestOptionsRoutes(t *testing.T) {
 }
 
 func TestRouteMiddleware(t *testing.T) {
-	testCases := []struct {
-		desc string
-	}{
-		{
-			desc: "",
-		},
-	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
+	path := "/a"
+	mainHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "OK")
+	})
 
-		})
+	config := "*;https://foo.bar.org;content-type;*"
+	rules := cors.NewRules(config)
+	err := rules.Parse()
+	require.NoError(t, err)
+
+	rule, ok := rules.OfPath(path)
+	require.True(t, ok)
+
+	h := cors.Middleware("*", rule)(mainHandler)
+
+	router := mux.NewRouter()
+	router.Handle(path, h).Methods(http.MethodOptions, http.MethodGet, http.MethodPut)
+
+	// OPTIONS for GET request
+	{
+		req := httptest.NewRequest(http.MethodOptions, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+		req.Header.Set("Access-Control-Request-Method", "GET")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, "https://foo.bar.org", res.Header.Get("Access-Control-Allow-Origin"))
+		assert.Empty(t, res.Header.Get("Access-Control-Allow-Methods")) // GET is allowed by default
+	}
+	// GET request
+	{
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+		defer res.Body.Close()
+
+		body, _ := ioutil.ReadAll(res.Body)
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, "https://foo.bar.org", res.Header.Get("Access-Control-Allow-Origin"))
+		assert.Equal(t, "OK", string(body))
+	}
+
+	// OPTIONS for PUT request
+	{
+		req := httptest.NewRequest(http.MethodOptions, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+		req.Header.Set("Access-Control-Request-Headers", "content-type")
+		req.Header.Set("Access-Control-Request-Method", "PUT")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, "https://foo.bar.org", res.Header.Get("Access-Control-Allow-Origin"))
+		assert.Equal(t, "Content-Type", res.Header.Get("Access-Control-Allow-Headers"))
+		assert.Equal(t, "PUT", res.Header.Get("Access-Control-Allow-Methods"))
+	}
+	// PUT request
+	{
+		req := httptest.NewRequest(http.MethodPut, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+		req.Header.Set("Content-Type", "application/json")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+		defer res.Body.Close()
+
+		body, _ := ioutil.ReadAll(res.Body)
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, "https://foo.bar.org", res.Header.Get("Access-Control-Allow-Origin"))
+		assert.Equal(t, "OK", string(body))
+	}
+
+	// OPTIONS request without method
+	{
+		req := httptest.NewRequest(http.MethodOptions, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+		req.Header.Set("Access-Control-Request-Headers", "X-Correlation-Id")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	}
+
+	// OPTIONS request witho unregistered header
+	{
+		req := httptest.NewRequest(http.MethodOptions, path, nil)
+		rr := httptest.NewRecorder()
+
+		req.Header.Set("Origin", "https://foo.bar.org")
+		req.Header.Set("Access-Control-Request-Headers", "X-Correlation-Id")
+		req.Header.Set("Access-Control-Request-Method", "PUT")
+
+		router.ServeHTTP(rr, req)
+		res := rr.Result()
+
+		assert.Equal(t, http.StatusForbidden, res.StatusCode)
 	}
 }

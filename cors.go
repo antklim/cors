@@ -10,7 +10,7 @@ import (
 
 // TODO: support different rules config format: yaml, json
 
-// Cors config format: ruleA\nruleB...\nruleX
+// CORS txt config format: ruleA\nruleB...\nruleX
 //
 // Rule format: PATHs;ORIGINs;HEADERs;METHODs
 // path can be *
@@ -63,13 +63,17 @@ func find(a []string, x string) (bool, int) {
 
 func addOptionsRoute(router *mux.Router, path string, r Rule) {
 	h := handlers.CORS(
-		handlers.AllowedHeaders(r.h),
-		handlers.AllowedMethods(r.m),
-		handlers.AllowedOrigins(r.o),
+		handlers.AllowedHeaders(r.Headers()),
+		handlers.AllowedMethods(r.Methods()),
+		handlers.AllowedOrigins(r.Origins()),
 	)(noopHTTPHandler)
 	router.Handle(path, h).Methods(http.MethodOptions)
 }
 
-// TODO: implement
-// func RouteMiddleware(path string, r Rule) func(http.Handler) http.Handler {
-// }
+func Middleware(path string, r Rule) func(http.Handler) http.Handler {
+	return handlers.CORS(
+		handlers.AllowedHeaders(r.Headers()),
+		handlers.AllowedMethods(r.Methods()),
+		handlers.AllowedOrigins(r.Origins()),
+	)
+}
