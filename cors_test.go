@@ -35,12 +35,6 @@ func TestRoutesValidation(t *testing.T) {
 	}
 }
 
-// [/a, /b] *;*;;* - OPTIONS request to a and b returns allowed origin * and all allowed methods
-// [/a, /b] /a;example.com;content-type;DELETE - OPTIONS request to a returns allowed origin example.com and allowed method
-// [/a, /b] /a;example.com;content-type;DELETE - OPTIONS request to b returns 405
-// [/a, /b] /a;example.com;content-type;DELETE\n/b;example.com;content-type;POST,PUT - OPTIONS request to b returns 200
-// request to unregistered header returs 403
-
 func TestRoutes(t *testing.T) {
 	paths := []string{"/a", "/b"}
 
@@ -99,6 +93,52 @@ func TestRoutes(t *testing.T) {
 				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
 				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
 				assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
+			},
+		},
+		{
+			desc:   "request to unregistered header returns 403",
+			method: http.MethodOptions,
+			headers: map[string]string{
+				"Origin":                         "https://foo.bar.org",
+				"Access-Control-Request-Headers": "content-type",
+				"Access-Control-Request-Method":  "PUT",
+			},
+			path:          "/a",
+			rules:         "*;*;;*",
+			code:          http.StatusForbidden,
+			assertHeaders: func(t *testing.T, h http.Header) {},
+		},
+		{
+			desc:   "request to custom configured path /a returns 200",
+			method: http.MethodOptions,
+			headers: map[string]string{
+				"Origin":                         "https://foo.bar.org",
+				"Access-Control-Request-Headers": "content-type",
+				"Access-Control-Request-Method":  "PUT",
+			},
+			path:  "/a",
+			rules: "/a;https://foo.bar.org;content-type,x-correlation-id;PUT\n*;bar.com;;*",
+			code:  http.StatusOK,
+			assertHeaders: func(t *testing.T, h http.Header) {
+				assert.Equal(t, "https://foo.bar.org", h.Get("Access-Control-Allow-Origin"))
+				assert.Equal(t, []string{"Content-Type"}, h.Values("Access-Control-Allow-Headers"))
+				assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
+			},
+		},
+		{
+			desc:   "request to custom configured path /b returns 200",
+			method: http.MethodOptions,
+			headers: map[string]string{
+				"Origin":                        "https://bar.foo.org",
+				"Access-Control-Request-Method": "DELETE",
+			},
+			path:  "/b",
+			rules: "/a;https://foo.bar.org;content-type,x-correlation-id;PUT\n*;;;*",
+			code:  http.StatusOK,
+			assertHeaders: func(t *testing.T, h http.Header) {
+				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
+				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
+				assert.Equal(t, "DELETE", h.Get("Access-Control-Allow-Methods"))
 			},
 		},
 	}
