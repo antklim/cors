@@ -6,6 +6,18 @@ import (
 	"strings"
 )
 
+// TODO: support different rules config format: yaml, json
+
+// Routes(<list of paths>, <cors config>) http.Handler
+//
+// Cors config format: ruleA\nruleB...\nruleX
+//
+// Rule format: PATHs;ORIGINs;HEADERs;METHODs
+// path can be *
+// allowed origins can be *
+// allowed headers should be explicit
+// allowed methods can be *
+
 const (
 	rulesDlm  string = "\n"
 	fieldsDlm string = ";"
