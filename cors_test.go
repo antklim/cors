@@ -75,7 +75,7 @@ func TestOptionsRoutes(t *testing.T) {
 			code:  http.StatusOK,
 			assertHeaders: func(t *testing.T, h http.Header) {
 				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
-				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
+				assert.Empty(t, h.Get("Access-Control-Allow-Headers"))
 				assert.Equal(t, "DELETE", h.Get("Access-Control-Allow-Methods"))
 			},
 		},
@@ -91,7 +91,7 @@ func TestOptionsRoutes(t *testing.T) {
 			code:  http.StatusOK,
 			assertHeaders: func(t *testing.T, h http.Header) {
 				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
-				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
+				assert.Empty(t, h.Get("Access-Control-Allow-Headers"))
 				assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
 			},
 		},
@@ -121,7 +121,7 @@ func TestOptionsRoutes(t *testing.T) {
 			code:  http.StatusOK,
 			assertHeaders: func(t *testing.T, h http.Header) {
 				assert.Equal(t, "https://foo.bar.org", h.Get("Access-Control-Allow-Origin"))
-				assert.Equal(t, []string{"Content-Type"}, h.Values("Access-Control-Allow-Headers"))
+				assert.Equal(t, "Content-Type", h.Get("Access-Control-Allow-Headers"))
 				assert.Equal(t, "PUT", h.Get("Access-Control-Allow-Methods"))
 			},
 		},
@@ -137,7 +137,7 @@ func TestOptionsRoutes(t *testing.T) {
 			code:  http.StatusOK,
 			assertHeaders: func(t *testing.T, h http.Header) {
 				assert.Equal(t, "*", h.Get("Access-Control-Allow-Origin"))
-				assert.Empty(t, h.Values("Access-Control-Allow-Headers"))
+				assert.Empty(t, h.Get("Access-Control-Allow-Headers"))
 				assert.Equal(t, "DELETE", h.Get("Access-Control-Allow-Methods"))
 			},
 		},

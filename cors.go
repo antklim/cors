@@ -10,8 +10,6 @@ import (
 
 // TODO: support different rules config format: yaml, json
 
-// Routes(<list of paths>, <cors config>) http.Handler
-//
 // Cors config format: ruleA\nruleB...\nruleX
 //
 // Rule format: PATHs;ORIGINs;HEADERs;METHODs
@@ -34,19 +32,20 @@ func OptionsRoutes(paths []string, config string) (http.Handler, error) {
 
 	router := mux.NewRouter()
 
+	// r.op has only unique paths and a wildacrd if presented
+	// only the first occurence of the path configuration applied
 	for _, p := range r.op {
 		rule := r.pr[p]
 		if p == wildcard {
 			for _, pp := range paths {
-				addRule(router, pp, rule)
+				addOptionsRoute(router, pp, rule)
 			}
 			break
 		}
 
 		found, _ := find(paths, p)
 		if found {
-			addRule(router, p, rule)
-			// TODO: delete rule here to avoid duplication when reached a wildcard
+			addOptionsRoute(router, p, rule)
 		}
 	}
 
@@ -62,11 +61,7 @@ func find(a []string, x string) (bool, int) {
 	return false, 0
 }
 
-// func deleteAt(a []string, idx int) []string {
-// 	return append(a[:idx], a[idx+1:]...)
-// }
-
-func addRule(router *mux.Router, path string, r Rule) {
+func addOptionsRoute(router *mux.Router, path string, r Rule) {
 	h := handlers.CORS(
 		handlers.AllowedHeaders(r.h),
 		handlers.AllowedMethods(r.m),
