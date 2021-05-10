@@ -33,7 +33,7 @@ func OptionsRoutes(paths []string, config string) (http.Handler, error) {
 	router := mux.NewRouter()
 
 	// r.op has only unique paths and a wildacrd if presented
-	// only the first occurence of the path configuration applied
+	// only the first occurrence of the path configuration applied
 	for _, p := range r.op {
 		rule := r.pr[p]
 		if p == wildcard {
