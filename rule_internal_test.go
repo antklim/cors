@@ -36,7 +36,7 @@ func TestRuleParseError(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			rules := newRules(tC.config)
+			rules := NewRules(tC.config)
 			err := rules.Parse()
 			assert.EqualError(t, err, tC.err)
 		})
@@ -47,14 +47,14 @@ func TestRuleParse(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		config string
-		r      *rules
+		r      *Rules
 	}{
 		{
 			desc:   "parses wildcard config",
 			config: "*;*;;*",
-			r: &rules{
+			r: &Rules{
 				raw: "*;*;;*",
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"*": {
 						o: []string{"*"},
 						h: nil,
@@ -69,9 +69,9 @@ func TestRuleParse(t *testing.T) {
 		{
 			desc:   "parses empty origin, headers and methods",
 			config: "*;;;",
-			r: &rules{
+			r: &Rules{
 				raw: "*;;;",
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"*": {
 						o: nil,
 						h: nil,
@@ -83,9 +83,9 @@ func TestRuleParse(t *testing.T) {
 		{
 			desc:   "parses any case methods",
 			config: "*;;;post,Put",
-			r: &rules{
+			r: &Rules{
 				raw: "*;;;post,Put",
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"*": {
 						o: nil,
 						h: nil,
@@ -97,9 +97,9 @@ func TestRuleParse(t *testing.T) {
 		{
 			desc:   "parses config with explicit fields",
 			config: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
-			r: &rules{
+			r: &Rules{
 				raw: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com", "bar.com"},
 						h: []string{"content-type", "content-length"},
@@ -117,10 +117,10 @@ func TestRuleParse(t *testing.T) {
 			desc: "parses multiline config",
 			config: `/a;foo.com;content-type;DELETE
 			/b;bar.com;content-length;PUT`,
-			r: &rules{
+			r: &Rules{
 				raw: `/a;foo.com;content-type;DELETE
 			/b;bar.com;content-length;PUT`,
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
 						h: []string{"content-type"},
@@ -140,12 +140,12 @@ func TestRuleParse(t *testing.T) {
 					/a;foo.com;content-type;DELETE
 					/b;bar.com;content-length;PUT
 					`,
-			r: &rules{
+			r: &Rules{
 				raw: `
 					/a;foo.com;content-type;DELETE
 					/b;bar.com;content-length;PUT
 					`,
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
 						h: []string{"content-type"},
@@ -163,10 +163,10 @@ func TestRuleParse(t *testing.T) {
 			desc: "ignores repeatable occurrences of path in config",
 			config: `/a;foo.com;content-type;DELETE
 			/a;bar.com;content-length;PUT`,
-			r: &rules{
+			r: &Rules{
 				raw: `/a;foo.com;content-type;DELETE
 			/a;bar.com;content-length;PUT`,
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
 						h: []string{"content-type"},
@@ -180,11 +180,11 @@ func TestRuleParse(t *testing.T) {
 			config: `/a;foo.com;content-type;DELETE
 			*;foobar.com;;PATCH
 			/b;bar.com;content-length;PUT`,
-			r: &rules{
+			r: &Rules{
 				raw: `/a;foo.com;content-type;DELETE
 			*;foobar.com;;PATCH
 			/b;bar.com;content-length;PUT`,
-				pr: map[string]rule{
+				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
 						h: []string{"content-type"},
@@ -201,7 +201,7 @@ func TestRuleParse(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			rules := newRules(tC.config)
+			rules := NewRules(tC.config)
 			err := rules.Parse()
 			require.NoError(t, err)
 			assert.Equal(t, tC.r, rules)

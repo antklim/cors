@@ -27,7 +27,7 @@ func Routes(paths []string, config string) (http.Handler, error) {
 		return nil, errors.New("invalid paths list: cannot be empty")
 	}
 
-	r := newRules(config)
+	r := NewRules(config)
 	if err := r.Parse(); err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func find(a []string, x string) (bool, int) {
 // 	return append(a[:idx], a[idx+1:]...)
 // }
 
-func addRule(router *mux.Router, path string, r rule) {
+func addRule(router *mux.Router, path string, r Rule) {
 	h := handlers.CORS(
 		handlers.AllowedHeaders(r.h),
 		handlers.AllowedMethods(r.m),

@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// TODO: add rule builder .WithOrigins, .WithHeaders, .WithMethods, .Build
+
 const (
 	rulesDlm  string = "\n"
 	fieldsDlm string = ";"
@@ -36,32 +38,32 @@ var allMethods = []string{
 
 var validMethods = append([]string{http.MethodConnect, http.MethodOptions, http.MethodTrace}, allMethods...)
 
-type rule struct {
+type Rule struct {
 	o []string // origins
 	h []string // headers
 	m []string // methods
 }
 
-type rules struct {
+type Rules struct {
 	raw string
-	pr  map[string]rule
+	pr  map[string]Rule
 }
 
-func newRules(config string) *rules {
-	return &rules{raw: config}
+func NewRules(config string) *Rules {
+	return &Rules{raw: config}
 }
 
-func (r *rules) Parse() error {
+func (r *Rules) Parse() error {
 	return r.parseTxt()
 }
 
-func (r *rules) parseTxt() error {
+func (r *Rules) parseTxt() error {
 	if strings.TrimSpace(r.raw) == "" {
 		return fmt.Errorf("%s: cannot be empty", parseErr)
 	}
 
 	rawRules := strings.Split(r.raw, rulesDlm)
-	r.pr = make(map[string]rule)
+	r.pr = make(map[string]Rule)
 
 	for i, rr := range rawRules {
 		rr = strings.TrimSpace(rr)
@@ -72,7 +74,6 @@ func (r *rules) parseTxt() error {
 		}
 
 		pohm := strings.Split(rr, fieldsDlm)
-
 		if s := len(pohm); s != fNum {
 			return fmt.Errorf("%s: invalid amount of fields in rule %d, got %d want %d", parseErr, i+1, s, fNum)
 		}
@@ -99,7 +100,7 @@ func (r *rules) parseTxt() error {
 				continue
 			}
 
-			r.pr[p] = rule{
+			r.pr[p] = Rule{
 				o: origins,
 				h: headers,
 				m: methods,
