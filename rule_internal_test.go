@@ -54,6 +54,7 @@ func TestRuleParse(t *testing.T) {
 			config: "*;*;;*",
 			r: &Rules{
 				raw: "*;*;;*",
+				op:  []string{"*"},
 				pr: map[string]Rule{
 					"*": {
 						o: []string{"*"},
@@ -71,6 +72,7 @@ func TestRuleParse(t *testing.T) {
 			config: "*;;;",
 			r: &Rules{
 				raw: "*;;;",
+				op:  []string{"*"},
 				pr: map[string]Rule{
 					"*": {
 						o: nil,
@@ -85,6 +87,7 @@ func TestRuleParse(t *testing.T) {
 			config: "*;;;post,Put",
 			r: &Rules{
 				raw: "*;;;post,Put",
+				op:  []string{"*"},
 				pr: map[string]Rule{
 					"*": {
 						o: nil,
@@ -99,6 +102,7 @@ func TestRuleParse(t *testing.T) {
 			config: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
 			r: &Rules{
 				raw: "/a,/b;foo.com,bar.com;content-type,content-length;DELETE,PUT",
+				op:  []string{"/a", "/b"},
 				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com", "bar.com"},
@@ -120,6 +124,7 @@ func TestRuleParse(t *testing.T) {
 			r: &Rules{
 				raw: `/a;foo.com;content-type;DELETE
 			/b;bar.com;content-length;PUT`,
+				op: []string{"/a", "/b"},
 				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
@@ -145,6 +150,7 @@ func TestRuleParse(t *testing.T) {
 					/a;foo.com;content-type;DELETE
 					/b;bar.com;content-length;PUT
 					`,
+				op: []string{"/a", "/b"},
 				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
@@ -166,6 +172,7 @@ func TestRuleParse(t *testing.T) {
 			r: &Rules{
 				raw: `/a;foo.com;content-type;DELETE
 			/a;bar.com;content-length;PUT`,
+				op: []string{"/a"},
 				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},
@@ -184,6 +191,7 @@ func TestRuleParse(t *testing.T) {
 				raw: `/a;foo.com;content-type;DELETE
 			*;foobar.com;;PATCH
 			/b;bar.com;content-length;PUT`,
+				op: []string{"/a", "*"},
 				pr: map[string]Rule{
 					"/a": {
 						o: []string{"foo.com"},

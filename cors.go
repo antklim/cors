@@ -34,7 +34,8 @@ func OptionsRoutes(paths []string, config string) (http.Handler, error) {
 
 	router := mux.NewRouter()
 
-	for p, rule := range r.pr {
+	for _, p := range r.op {
+		rule := r.pr[p]
 		if p == wildcard {
 			for _, pp := range paths {
 				addRule(router, pp, rule)

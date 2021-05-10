@@ -111,6 +111,7 @@ func (b RuleBuilder) Build() Rule {
 
 type Rules struct {
 	raw string
+	op  []string // ordered paths list
 	pr  map[string]Rule
 }
 
@@ -123,11 +124,7 @@ func (r *Rules) Parse() error {
 }
 
 func (r *Rules) Paths() []string {
-	var p []string
-	for k := range r.pr {
-		p = append(p, k)
-	}
-	return p
+	return r.op
 }
 
 func (r *Rules) OfPath(path string) (Rule, bool) {
@@ -148,7 +145,6 @@ func (r *Rules) parseTxt() error {
 	}
 
 	rawRules := strings.Split(r.raw, rulesDlm)
-	r.pr = make(map[string]Rule)
 
 	for i, rr := range rawRules {
 		rr = strings.TrimSpace(rr)
@@ -183,6 +179,16 @@ func (r *Rules) parseTxt() error {
 			// ignore repeatable occurrences of path in config
 			if _, ok := r.pr[p]; ok {
 				continue
+			}
+
+			if r.op == nil {
+				r.op = append([]string{}, p)
+			} else {
+				r.op = append(r.op, p)
+			}
+
+			if r.pr == nil {
+				r.pr = make(map[string]Rule)
 			}
 
 			r.pr[p] = Rule{
