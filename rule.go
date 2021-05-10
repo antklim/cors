@@ -34,6 +34,8 @@ var allMethods = []string{
 	http.MethodPut,
 }
 
+var validMethods = append([]string{http.MethodConnect, http.MethodOptions, http.MethodTrace}, allMethods...)
+
 type rule struct {
 	o []string // origins
 	h []string // headers
@@ -90,8 +92,12 @@ func (r *rules) Parse() error {
 		if pohm[mIdx] == wildcard {
 			m = allMethods
 		} else if pohm[mIdx] != "" {
-			m = strings.Split(pohm[mIdx], valuesDlm)
-			m = toUpper(m)
+			m = strings.Split(strings.ToUpper(pohm[mIdx]), valuesDlm)
+			for _, a := range m {
+				if ok := contains(validMethods, a); !ok {
+					return fmt.Errorf("%s: invalid HTTP method %s in rule %d", parseErr, a, i+1)
+				}
+			}
 		}
 
 		// TODO: check whether path already registered
@@ -116,10 +122,11 @@ func (r *rules) Parse() error {
 	return nil
 }
 
-func toUpper(slist []string) []string {
-	var a []string
-	for _, s := range slist {
-		a = append(a, strings.ToUpper(s))
+func contains(l []string, x string) bool {
+	for _, a := range l {
+		if a == x {
+			return true
+		}
 	}
-	return a
+	return false
 }

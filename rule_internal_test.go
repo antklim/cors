@@ -28,12 +28,11 @@ func TestRuleParseError(t *testing.T) {
 			config: "*;;",
 			err:    "invalid cors rules: invalid amount of fields in rule 1, got 3 want 4",
 		},
-		// TODO:
-		// {
-		// 	desc:   "fails when cors rules config has invalid http method",
-		// 	config: "*;;;foo",
-		// 	err:    "invalid cors rules: invalid HTTP method FOO in rule 1",
-		// },
+		{
+			desc:   "fails when cors rules config has invalid http method",
+			config: "*;;;foo",
+			err:    "invalid cors rules: invalid HTTP method FOO in rule 1",
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
