@@ -7,7 +7,7 @@ import (
 )
 
 // TODO: add rule builder .WithOrigins, .WithHeaders, .WithMethods, .Build
-// TODO: add rule middleware getter
+// TODO: fix map key sorting
 
 const (
 	rulesDlm  string = "\n"
@@ -39,6 +39,14 @@ var allMethods = []string{
 
 var validMethods = append([]string{http.MethodConnect, http.MethodOptions, http.MethodTrace}, allMethods...)
 
+type exprType string
+
+const (
+	ruleOrigins exprType = "origins"
+	ruleHeaders exprType = "headers"
+	ruleMethods exprType = "methods"
+)
+
 type Rule struct {
 	o []string // origins
 	h []string // headers
@@ -55,6 +63,50 @@ func (r Rule) Headers() []string {
 
 func (r Rule) Methods() []string {
 	return r.m
+}
+
+type RuleBuilder struct {
+	expr map[exprType][]string
+}
+
+func NewRuleBuilder() RuleBuilder {
+	return RuleBuilder{}
+}
+
+func (b RuleBuilder) WithOrigins(o ...string) RuleBuilder {
+	if len(o) > 0 {
+		b.expr[ruleOrigins] = o
+	}
+	return b
+}
+
+func (b RuleBuilder) WithHeaders(h ...string) RuleBuilder {
+	if len(h) > 0 {
+		b.expr[ruleHeaders] = h
+	}
+	return b
+}
+
+func (b RuleBuilder) WithMethods(m ...string) RuleBuilder {
+	if len(m) > 0 {
+		b.expr[ruleHeaders] = m
+	}
+	return b
+}
+
+func (b RuleBuilder) Build() Rule {
+	r := Rule{}
+	for k, v := range b.expr {
+		switch k {
+		case ruleOrigins:
+			r.o = v
+		case ruleHeaders:
+			r.h = v
+		case ruleMethods:
+			r.m = v
+		}
+	}
+	return r
 }
 
 type Rules struct {

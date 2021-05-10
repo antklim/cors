@@ -69,3 +69,32 @@ func TestRulesOfPath(t *testing.T) {
 		})
 	}
 }
+
+func TestRuleBuilder(t *testing.T) {
+	testCases := []struct {
+		desc   string
+		o      []string
+		h      []string
+		m      []string
+		assert func(*testing.T, cors.Rule)
+	}{
+		{
+			desc: "default build",
+			assert: func(t *testing.T, r cors.Rule) {
+				assert.Nil(t, r.Origins())
+				assert.Nil(t, r.Headers())
+				assert.Nil(t, r.Methods())
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			rule := cors.NewRuleBuilder().
+				WithOrigins(tC.o...).
+				WithHeaders(tC.h...).
+				WithMethods(tC.m...).
+				Build()
+			tC.assert(t, rule)
+		})
+	}
+}
