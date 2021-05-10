@@ -52,6 +52,10 @@ func newRules(config string) *rules {
 }
 
 func (r *rules) Parse() error {
+	return r.parseTxt()
+}
+
+func (r *rules) parseTxt() error {
 	if strings.TrimSpace(r.raw) == "" {
 		return fmt.Errorf("%s: cannot be empty", parseErr)
 	}
@@ -73,50 +77,35 @@ func (r *rules) Parse() error {
 			return fmt.Errorf("%s: invalid amount of fields in rule %d, got %d want %d", parseErr, i+1, s, fNum)
 		}
 
-		p := strings.Split(pohm[pIdx], valuesDlm) // paths
-
-		// TODO: move paths, origin, headers and methods getters to separate methods
-		// origins
-		var o []string
-		if pohm[oIdx] != "" {
-			o = strings.Split(pohm[oIdx], valuesDlm)
+		paths := parsePaths(pohm[pIdx])
+		if paths == nil {
+			return fmt.Errorf("%s: path cannot be empty", parseErr)
 		}
 
-		// headers
-		var h []string
-		if pohm[hIdx] != "" {
-			h = strings.Split(pohm[hIdx], valuesDlm)
+		origins := parseOrigins(pohm[oIdx])
+		headers := parseHeaders(pohm[hIdx])
+		methods, err := parseMethods(pohm[mIdx], i+1)
+		if err != nil {
+			return err
 		}
 
-		var m []string // methods
-		if pohm[mIdx] == wildcard {
-			m = allMethods
-		} else if pohm[mIdx] != "" {
-			m = strings.Split(strings.ToUpper(pohm[mIdx]), valuesDlm)
-			for _, a := range m {
-				if ok := contains(validMethods, a); !ok {
-					return fmt.Errorf("%s: invalid HTTP method %s in rule %d", parseErr, a, i+1)
-				}
-			}
-		}
-
-		for _, v := range p {
-			if v == "" {
+		for _, p := range paths {
+			if p == "" {
 				return fmt.Errorf("%s: path cannot be empty", parseErr)
 			}
 
 			// ignore repeatable occurrences of path in config
-			if _, ok := r.pr[v]; ok {
+			if _, ok := r.pr[p]; ok {
 				continue
 			}
 
-			r.pr[v] = rule{
-				o: o,
-				h: h,
-				m: m,
+			r.pr[p] = rule{
+				o: origins,
+				h: headers,
+				m: methods,
 			}
 
-			if v == wildcard {
+			if p == wildcard {
 				// stop parsing when found path wildcard
 				return nil
 			}
@@ -124,6 +113,51 @@ func (r *rules) Parse() error {
 	}
 
 	return nil
+}
+
+func parsePaths(s string) []string {
+	var p []string
+	if s != "" {
+		p = strings.Split(s, valuesDlm)
+	}
+	return p
+}
+
+func parseOrigins(s string) []string {
+	var o []string
+	if s != "" {
+		o = strings.Split(s, valuesDlm)
+	}
+	return o
+}
+
+func parseHeaders(s string) []string {
+	var h []string
+	if s != "" {
+		h = strings.Split(s, valuesDlm)
+	}
+	return h
+}
+
+func parseMethods(s string, ruleNum int) ([]string, error) {
+	s = strings.TrimSpace(s)
+
+	if s == "" {
+		return nil, nil
+	}
+
+	if s == wildcard {
+		return allMethods, nil
+	}
+
+	m := strings.Split(strings.ToUpper(s), valuesDlm)
+	for _, a := range m {
+		if ok := contains(validMethods, a); !ok {
+			return nil, fmt.Errorf("%s: invalid HTTP method %s in rule %d", parseErr, a, ruleNum)
+		}
+	}
+
+	return m, nil
 }
 
 func contains(l []string, x string) bool {
