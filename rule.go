@@ -7,6 +7,7 @@ import (
 )
 
 // TODO: add rule builder .WithOrigins, .WithHeaders, .WithMethods, .Build
+// TODO: add rule middleware getter
 
 const (
 	rulesDlm  string = "\n"
@@ -42,6 +43,18 @@ type Rule struct {
 	o []string // origins
 	h []string // headers
 	m []string // methods
+}
+
+func (r Rule) Origins() []string {
+	return r.o
+}
+
+func (r Rule) Headers() []string {
+	return r.h
+}
+
+func (r Rule) Methods() []string {
+	return r.m
 }
 
 type Rules struct {

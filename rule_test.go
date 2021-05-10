@@ -1,6 +1,7 @@
 package cors_test
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/antklim/cors"
@@ -41,16 +42,20 @@ func TestRulesOfPath(t *testing.T) {
 			path:   "/a",
 			assert: func(t *testing.T, r cors.Rule, found bool) {
 				assert.True(t, found)
-				// TODO: compare origins, headers, methods
+				assert.Equal(t, []string{"foo.com"}, r.Origins())
+				assert.Equal(t, []string{"content-type"}, r.Headers())
+				assert.Equal(t, []string{http.MethodDelete}, r.Methods())
 			},
 		},
 		{
 			desc:   "is the wildcard rule otherwise",
-			config: "/a;foo.com;content-type;DELETE\n*;foobar.com;;PATCH",
+			config: "/a;foo.com;content-type;DELETE\n*;bar.com;;PATCH",
 			path:   "/b",
 			assert: func(t *testing.T, r cors.Rule, found bool) {
 				assert.True(t, found)
-				// TODO: compare origins, headers, methods
+				assert.Equal(t, []string{"bar.com"}, r.Origins())
+				assert.Nil(t, r.Headers())
+				assert.Equal(t, []string{http.MethodPatch}, r.Methods())
 			},
 		},
 	}
@@ -63,8 +68,4 @@ func TestRulesOfPath(t *testing.T) {
 			tC.assert(t, rule, ok)
 		})
 	}
-}
-
-func TestRuleOrigins(t *testing.T) {
-
 }
