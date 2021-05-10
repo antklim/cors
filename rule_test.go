@@ -86,6 +86,44 @@ func TestRuleBuilder(t *testing.T) {
 				assert.Nil(t, r.Methods())
 			},
 		},
+		{
+			desc: "custom origins build",
+			o:    []string{"a", "b"},
+			assert: func(t *testing.T, r cors.Rule) {
+				assert.Equal(t, []string{"a", "b"}, r.Origins())
+				assert.Nil(t, r.Headers())
+				assert.Nil(t, r.Methods())
+			},
+		},
+		{
+			desc: "custom headers build",
+			h:    []string{"content-type"},
+			assert: func(t *testing.T, r cors.Rule) {
+				assert.Nil(t, r.Origins())
+				assert.Equal(t, []string{"content-type"}, r.Headers())
+				assert.Nil(t, r.Methods())
+			},
+		},
+		{
+			desc: "custom methods build",
+			m:    []string{http.MethodDelete, http.MethodPatch},
+			assert: func(t *testing.T, r cors.Rule) {
+				assert.Nil(t, r.Origins())
+				assert.Nil(t, r.Headers())
+				assert.Equal(t, []string{http.MethodDelete, http.MethodPatch}, r.Methods())
+			},
+		},
+		{
+			desc: "fully custom build",
+			o:    []string{"a", "b"},
+			h:    []string{"content-type"},
+			m:    []string{http.MethodDelete, http.MethodPatch},
+			assert: func(t *testing.T, r cors.Rule) {
+				assert.Equal(t, []string{"a", "b"}, r.Origins())
+				assert.Equal(t, []string{"content-type"}, r.Headers())
+				assert.Equal(t, []string{http.MethodDelete, http.MethodPatch}, r.Methods())
+			},
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {

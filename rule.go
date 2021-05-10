@@ -6,9 +6,6 @@ import (
 	"strings"
 )
 
-// TODO: add rule builder .WithOrigins, .WithHeaders, .WithMethods, .Build
-// TODO: fix map key sorting
-
 const (
 	rulesDlm  string = "\n"
 	fieldsDlm string = ";"
@@ -75,6 +72,9 @@ func NewRuleBuilder() RuleBuilder {
 
 func (b RuleBuilder) WithOrigins(o ...string) RuleBuilder {
 	if len(o) > 0 {
+		if b.expr == nil {
+			b.expr = make(map[exprType][]string)
+		}
 		b.expr[ruleOrigins] = o
 	}
 	return b
@@ -82,14 +82,21 @@ func (b RuleBuilder) WithOrigins(o ...string) RuleBuilder {
 
 func (b RuleBuilder) WithHeaders(h ...string) RuleBuilder {
 	if len(h) > 0 {
+		if b.expr == nil {
+			b.expr = make(map[exprType][]string)
+		}
 		b.expr[ruleHeaders] = h
 	}
 	return b
 }
 
 func (b RuleBuilder) WithMethods(m ...string) RuleBuilder {
+	// TODO: skip invalid methods
 	if len(m) > 0 {
-		b.expr[ruleHeaders] = m
+		if b.expr == nil {
+			b.expr = make(map[exprType][]string)
+		}
+		b.expr[ruleMethods] = m
 	}
 	return b
 }
