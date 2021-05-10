@@ -91,12 +91,12 @@ func (b RuleBuilder) WithHeaders(h ...string) RuleBuilder {
 }
 
 func (b RuleBuilder) WithMethods(m ...string) RuleBuilder {
-	// TODO: skip invalid methods
-	if len(m) > 0 {
+	vm := filterMethods(m)
+	if len(vm) > 0 {
 		if b.expr == nil {
 			b.expr = make(map[exprType][]string)
 		}
-		b.expr[ruleMethods] = m
+		b.expr[ruleMethods] = vm
 	}
 	return b
 }
@@ -266,4 +266,14 @@ func contains(l []string, x string) bool {
 		}
 	}
 	return false
+}
+
+func filterMethods(mm []string) []string {
+	fm := make([]string, 0, len(mm))
+	for _, m := range mm {
+		if contains(validMethods, m) {
+			fm = append(fm, m)
+		}
+	}
+	return fm
 }

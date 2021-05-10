@@ -117,7 +117,7 @@ func TestRuleBuilder(t *testing.T) {
 			desc: "fully custom build",
 			o:    []string{"a", "b"},
 			h:    []string{"content-type"},
-			m:    []string{http.MethodDelete, http.MethodPatch},
+			m:    []string{"DELETE", "PATCH", "FOO"},
 			assert: func(t *testing.T, r cors.Rule) {
 				assert.Equal(t, []string{"a", "b"}, r.Origins())
 				assert.Equal(t, []string{"content-type"}, r.Headers())
