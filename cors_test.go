@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRoutesValidation(t *testing.T) {
+func TestOptionsRoutesValidation(t *testing.T) {
 	testCases := []struct {
 		desc  string
 		paths []string
@@ -29,13 +29,13 @@ func TestRoutesValidation(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			_, err := cors.Routes(tC.paths, tC.rules)
+			_, err := cors.OptionsRoutes(tC.paths, tC.rules)
 			assert.EqualError(t, err, tC.err)
 		})
 	}
 }
 
-func TestRoutes(t *testing.T) {
+func TestOptionsRoutes(t *testing.T) {
 	paths := []string{"/a", "/b"}
 
 	testCases := []struct {
@@ -152,13 +152,28 @@ func TestRoutes(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 
-			h, err := cors.Routes(paths, tC.rules)
+			h, err := cors.OptionsRoutes(paths, tC.rules)
 			require.NoError(t, err)
 			h.ServeHTTP(rr, req)
 
 			res := rr.Result()
 			assert.Equal(t, tC.code, res.StatusCode)
 			tC.assertHeaders(t, res.Header)
+		})
+	}
+}
+
+func TestRouteMiddleware(t *testing.T) {
+	testCases := []struct {
+		desc string
+	}{
+		{
+			desc: "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+
 		})
 	}
 }

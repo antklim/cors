@@ -22,7 +22,7 @@ import (
 
 var noopHTTPHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-func Routes(paths []string, config string) (http.Handler, error) {
+func OptionsRoutes(paths []string, config string) (http.Handler, error) {
 	if len(paths) == 0 {
 		return nil, errors.New("invalid paths list: cannot be empty")
 	}
@@ -73,3 +73,7 @@ func addRule(router *mux.Router, path string, r Rule) {
 	)(noopHTTPHandler)
 	router.Handle(path, h).Methods(http.MethodOptions)
 }
+
+// TODO: implement
+// func RouteMiddleware(path string, r Rule) func(http.Handler) http.Handler {
+// }
