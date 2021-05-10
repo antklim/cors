@@ -57,6 +57,26 @@ func (r *Rules) Parse() error {
 	return r.parseTxt()
 }
 
+func (r *Rules) Paths() []string {
+	var p []string
+	for k := range r.pr {
+		p = append(p, k)
+	}
+	return p
+}
+
+func (r *Rules) OfPath(path string) (Rule, bool) {
+	if rule, ok := r.pr[path]; ok {
+		return rule, true
+	}
+
+	if rule, ok := r.pr[wildcard]; ok {
+		return rule, true
+	}
+
+	return Rule{}, false
+}
+
 func (r *Rules) parseTxt() error {
 	if strings.TrimSpace(r.raw) == "" {
 		return fmt.Errorf("%s: cannot be empty", parseErr)
