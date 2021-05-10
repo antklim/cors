@@ -159,9 +159,22 @@ func TestRuleParse(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	desc: "check whether path already registered",
-		// }
+		{
+			desc: "ignores repeatable occurrences of path in config",
+			config: `/a;foo.com;content-type;DELETE
+			/a;bar.com;content-length;PUT`,
+			r: &rules{
+				raw: `/a;foo.com;content-type;DELETE
+			/a;bar.com;content-length;PUT`,
+				pr: map[string]rule{
+					"/a": {
+						o: []string{"foo.com"},
+						h: []string{"content-type"},
+						m: []string{http.MethodDelete},
+					},
+				},
+			},
+		},
 		{
 			desc: "stops parsing when found paths wildcard",
 			config: `/a;foo.com;content-type;DELETE

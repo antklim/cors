@@ -8,6 +8,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// TODO: support different rules config format: yaml, json
+
+// Routes(<list of paths>, <cors config>) http.Handler
+//
+// Cors config format: ruleA\nruleB...\nruleX
+//
+// Rule format: PATHs;ORIGINs;HEADERs;METHODs
+// path can be *
+// allowed origins can be *
+// allowed headers should be explicit
+// allowed methods can be *
+
 var noopHTTPHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
 func Routes(paths []string, config string) (http.Handler, error) {
