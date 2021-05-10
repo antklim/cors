@@ -10,13 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO: Routes(<list of paths>, <cors config>) http.Handler
-//			 cors config: paths;allowed origins;allowed headers;allowed methods\n
-// path can be *
-// allowed origins can be *
-// allowed headers can be explicit
-// Rule format: PATH;ORIGINs;HEADERs;METHODs
-
 func TestRoutesValidation(t *testing.T) {
 	testCases := []struct {
 		desc  string
